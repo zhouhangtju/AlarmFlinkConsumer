@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <contextName>massiveLog</contextName>
+
+    <!-- 日志的输出目录 -->
+    <property name="log.path" value="logs" />
+
+    <!--控制台日志格式：彩色日志-->
+    <!-- magenta:洋红 -->
+    <!-- boldMagenta:粗红-->
+    <!-- cyan:青色 -->
+    <!-- white:白色 -->
+    <!-- magenta:洋红 -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%yellow(%date{yyyy-MM-dd HH:mm:ss}) %highlight([%-5level]) %green(%logger) %thread %msg%n"/>
+
+    <!--文件日志格式-->
+    <property name="FILE_LOG_PATTERN"
+              value="%date{yyyy-MM-dd HH:mm:ss} [%-5level] %thread %file:%line %logger %msg%n" />
+
+    <!--编码-->
+    <property name="ENCODING"
+              value="UTF-8" />
+
+    <!-- 输出 Logback 内部状态 -->
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+
+    <!-- 控制台日志 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 文件日志 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log.path}/error.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <!-- 设置滚动日志记录的滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志归档路径以及格式 -->
+            <fileNamePattern>${log.path}/error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!--归档日志文件保留的最大数量-->
+            <maxHistory>10</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <!--  要区别于其他的appender中的文件名字  -->
+        <file>${log.path}/business.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <!-- 设置滚动日志记录的滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- 日志归档路径以及格式 -->
+            <fileNamePattern>${log.path}/business-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!--归档日志文件保留的最大数量-->
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>10MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+
+    </appender>
+
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} ----> [%thread] ---> %-5level %logger{50} - %msg%n</pattern>
+        </layout>
+    </appender>
+
+
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+<!--        <appender-ref ref="ROLLING_FILE" />-->
+    </root>
+
+    <!-- 生产环境 -->
+    <logger name="com.mobile" level="info">
+        <appender-ref ref="ROLLING_FILE" />
+        <appender-ref ref="ERROR_FILE" />
+<!--        <appender-ref ref="CONSOLE" />-->
+    </logger>
+
+    <logger name="org.apache.kafka.clients" level="warn" />
+    <logger name="org.apache.flink.runtime" level="warn" />
+
+</configuration>
