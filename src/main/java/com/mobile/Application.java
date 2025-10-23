@@ -84,10 +84,14 @@ public class Application {
 
             Configuration configuration = new Configuration();
             configuration.setString("rest.port", String.valueOf(flinkUiPort));
-// 总内存8GB
-            configuration.setString("taskmanager.memory.process.size", "8192m");
-// 网络缓冲区占比20%（计算值1638m）
-            configuration.setString("taskmanager.memory.network.fraction", "0.2");
+// 2. 核心内存配置：总进程内存调整为 16GB（16384m）
+            configuration.setString("taskmanager.memory.process.size", "16384m");
+
+// 3. 网络缓冲区配置（维持 15% 占比，计算：16384m * 0.15 = 2457.6m，完全满足高并发网络传输）
+            configuration.setString("taskmanager.memory.network.fraction", "0.15");
+// 4. 堆内存配置（关键！分配总内存的 50% = 8GB，足够支撑大规模业务数据处理）
+// 若业务逻辑存在大量内存计算（如复杂聚合、大对象缓存），可进一步上调至 60%（9830m）
+            configuration.setString("taskmanager.memory.heap.size", "8192m");
 
             final StreamExecutionEnvironment streamEnvironment = StreamExecutionEnvironment.getExecutionEnvironment(configuration);
 
@@ -95,7 +99,7 @@ public class Application {
 
 
 
-            streamEnvironment.setParallelism(1);
+            streamEnvironment.setParallelism(6);
             // 数据延迟时间
             Integer delay = Integer.valueOf(60);
             // 添加数据源
